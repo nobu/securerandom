@@ -96,8 +96,7 @@ module Random::Formatter
 
   # Generate a random base64 string.
   #
-  # The argument _n_ specifies the length, in bytes, of the random number
-  # to be generated. The length of the result string is about 4/3 of _n_.
+  # The argument _n_ specifies the length of the result string.
   #
   # If _n_ is not specified or is nil, 16 is assumed.
   # It may be larger in the future.
@@ -106,47 +105,44 @@ module Random::Formatter
   #
   #   require 'random/formatter'
   #
-  #   Random.base64 #=> "/2BuBuLf3+WfSKyQbRcc/A=="
+  #   Random.base64 #=> "/2BuBuLf3+WfSKyQ"
   #   # or
   #   prng = Random.new
-  #   prng.base64 #=> "6BbW0pxO0YENxn38HMUbcQ=="
+  #   prng.base64 #=> "6BbW0pxO0YENxn38"
   #
   # See RFC 3548 for the definition of base64.
   def base64(n=nil)
-    [random_bytes(n)].pack("m0")
+    n = n ? n.to_int : 16
+    [random_bytes((n * 3 + 3) / 4)].pack("m0")[0, n]
   end
 
   # Generate a random URL-safe base64 string.
   #
-  # The argument _n_ specifies the length, in bytes, of the random number
-  # to be generated. The length of the result string is about 4/3 of _n_.
+  # The argument _n_ specifies the length of the result string.
   #
   # If _n_ is not specified or is nil, 16 is assumed.
   # It may be larger in the future.
   #
-  # The boolean argument _padding_ specifies the padding.
-  # If it is false or nil, padding is not generated.
-  # Otherwise padding is generated.
-  # By default, padding is not generated because "=" may be used as a URL delimiter.
+  # The boolean argument _padding_ is for the compatiblity with
+  # SecureRandom#urlsafe_base64, and ignored.
   #
   # The result may contain A-Z, a-z, 0-9, "-" and "_".
   # "=" is also used if _padding_ is true.
   #
   #   require 'random/formatter'
   #
-  #   Random.urlsafe_base64 #=> "b4GOKm4pOYU_-BOXcrUGDg"
+  #   Random.urlsafe_base64 #=> "b4GOKm4pOYU_-BOX"
   #   # or
   #   prng = Random.new
-  #   prng.urlsafe_base64 #=> "UZLdOkzop70Ddx-IJR0ABg"
+  #   prng.urlsafe_base64 #=> "UZLdOkzop70Ddx-I"
   #
-  #   prng.urlsafe_base64(nil, true) #=> "i0XQ-7gglIsHGV2_BNPrdQ=="
-  #   prng.urlsafe_base64(nil, true) #=> "-M8rLhr7JEpJlqFGUMmOxg=="
+  #   prng.urlsafe_base64(20) #=> "i0XQ-7gglIsHGV2_BNPr"
+  #   prng.urlsafe_base64(20) #=> "-M8rLhr7JEpJlqFGUMmO"
   #
   # See RFC 3548 for the definition of URL-safe base64.
   def urlsafe_base64(n=nil, padding=false)
-    s = [random_bytes(n)].pack("m0")
+    s = base64(n)
     s.tr!("+/", "-_")
-    s.delete!("=") unless padding
     s
   end
 
